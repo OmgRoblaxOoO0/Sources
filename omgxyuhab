@@ -1,0 +1,1257 @@
+if not game:IsLoaded() then
+	game.Loaded:Wait()
+end
+
+-- SPEED SETTING (change value as desired)
+local FLY_SPEED = 25 -- Fly speed to coins (can be changed from 10 to 50)
+
+-- Anti-AFK function
+local function AntiAFK()
+	local GC = getconnections or get_signal_cons
+	if GC then
+		for i,v in pairs(GC(game.Players.LocalPlayer.Idled)) do
+			if v["Disable"] then
+				v["Disable"](v)
+			elseif v["Disconnect"] then
+				v["Disconnect"](v)
+			end
+		end
+	else
+		local VirtualUser = game:GetService("VirtualUser")
+		game.Players.LocalPlayer.Idled:Connect(function()
+			VirtualUser:CaptureController()
+			VirtualUser:ClickButton2(Vector2.new())
+		end)
+	end
+end
+
+AntiAFK()
+
+-- Services
+local Player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Remove old GUI if exists
+if CoreGui:FindFirstChild("HuiHub") then
+	CoreGui:FindFirstChild("HuiHub"):Destroy()
+end
+
+-- Create main GUI
+local MainGui = Instance.new("ScreenGui")
+MainGui.Name = "HuiHub"
+MainGui.ResetOnSpawn = false
+MainGui.Parent = CoreGui
+
+-- Main frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BackgroundTransparency = 0.2
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.Size = UDim2.new(0, 220, 0, 250)
+MainFrame.ZIndex = 2
+MainFrame.Parent = MainGui
+
+-- Stroke
+local MainFrameStroke = Instance.new("UIStroke")
+MainFrameStroke.Color = Color3.fromRGB(150, 150, 150)
+MainFrameStroke.Thickness = 1
+MainFrameStroke.Parent = MainFrame
+
+-- Corners
+local MainFrameUiCorner = Instance.new("UICorner")
+MainFrameUiCorner.CornerRadius = UDim.new(0, 8)
+MainFrameUiCorner.Parent = MainFrame
+
+-- Title (orange)
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "Title"
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Position = UDim2.new(0.05, 0, 0.05, 0)
+TitleLabel.Size = UDim2.new(0.9, 0, 0.12, 0)
+TitleLabel.Font = Enum.Font.DenkOne
+TitleLabel.Text = "HuiHub MM2🎃"
+TitleLabel.ZIndex = 2
+TitleLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
+TitleLabel.TextSize = 16
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+TitleLabel.Parent = MainFrame
+
+-- White circle (base)
+local CircleBase = Instance.new("TextButton")
+CircleBase.Name = "CircleBase"
+CircleBase.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CircleBase.Position = UDim2.new(0.95, -30, 0.05, 0)
+CircleBase.Size = UDim2.new(0, 60, 0, 60)
+CircleBase.ZIndex = 10
+CircleBase.Text = ""
+CircleBase.Parent = MainGui
+
+local CircleBaseCorner = Instance.new("UICorner")
+CircleBaseCorner.CornerRadius = UDim.new(1, 0)
+CircleBaseCorner.Parent = CircleBase
+
+-- Circle stroke
+local CircleBaseStroke = Instance.new("UIStroke")
+CircleBaseStroke.Color = Color3.fromRGB(150, 150, 150)
+CircleBaseStroke.Thickness = 2
+CircleBaseStroke.Parent = CircleBase
+
+-- Square inside circle (diagonal = circle diameter)
+local InnerSquare = Instance.new("Frame")
+InnerSquare.Name = "InnerSquare"
+InnerSquare.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+InnerSquare.Size = UDim2.new(0, 42, 0, 42)
+InnerSquare.Position = UDim2.new(0.5, -21, 0.5, -21)
+InnerSquare.ZIndex = 11
+InnerSquare.Parent = CircleBase
+
+-- Top half of square (black)
+local TopHalf = Instance.new("Frame")
+TopHalf.Name = "TopHalf"
+TopHalf.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+TopHalf.Size = UDim2.new(1, 0, 0.5, 0)
+TopHalf.Position = UDim2.new(0, 0, 0, 0)
+TopHalf.ZIndex = 12
+TopHalf.Parent = InnerSquare
+
+-- Bottom half of square (orange)
+local BottomHalf = Instance.new("Frame")
+BottomHalf.Name = "BottomHalf"
+BottomHalf.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+BottomHalf.Size = UDim2.new(1, 0, 0.5, 0)
+BottomHalf.Position = UDim2.new(0, 0, 0.5, 0)
+BottomHalf.ZIndex = 12
+BottomHalf.Parent = InnerSquare
+
+-- Text "xyu" in top half
+local XyuText = Instance.new("TextLabel")
+XyuText.Name = "XyuText"
+XyuText.BackgroundTransparency = 1
+XyuText.Size = UDim2.new(1, 0, 0.5, 0)
+XyuText.Position = UDim2.new(0, 0, 0, 0)
+XyuText.Font = Enum.Font.DenkOne
+XyuText.Text = "xyu"
+XyuText.TextColor3 = Color3.fromRGB(255, 255, 255)
+XyuText.TextSize = 14
+XyuText.ZIndex = 13
+XyuText.Parent = InnerSquare
+
+-- Text "hub" in bottom half
+local HubText = Instance.new("TextLabel")
+HubText.Name = "HubText"
+HubText.BackgroundTransparency = 1
+HubText.Size = UDim2.new(1, 0, 0.5, 0)
+HubText.Position = UDim2.new(0, 0, 0.5, 0)
+HubText.Font = Enum.Font.DenkOne
+HubText.Text = "hub"
+HubText.TextColor3 = Color3.fromRGB(0, 0, 0)
+HubText.TextSize = 14
+HubText.ZIndex = 13
+HubText.Parent = InnerSquare
+
+-- Button states
+local ButtonStates = {
+    Autofarm = false,
+    ESP = false,
+    Sheriff = false,
+    Murder = false,
+    InfiniteYield = false
+}
+
+-- Function to create glow
+local function CreateGlow(indicator)
+    local glow = Instance.new("UIStroke")
+    glow.Color = Color3.fromRGB(255, 255, 255)
+    glow.Thickness = 3
+    glow.Transparency = 0.7
+    glow.Parent = indicator
+    
+    local innerGlow = Instance.new("UIStroke")
+    innerGlow.Color = Color3.fromRGB(255, 255, 255)
+    innerGlow.Thickness = 1.5
+    innerGlow.Transparency = 0.3
+    innerGlow.Parent = indicator
+    
+    return {glow, innerGlow}
+end
+
+-- Function to update indicator
+local function UpdateIndicator(button, indicator, statusLabel, state, buttonType)
+    if state then
+        indicator.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        
+        CreateGlow(indicator)
+        
+        if buttonType == "toggle" then
+            statusLabel.Text = "on"
+            statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+            
+            if button.Name == "AutofarmButton" then
+                button.BackgroundColor3 = Color3.fromRGB(169, 169, 169)
+            elseif button.Name == "EspButton" then
+                button.BackgroundColor3 = Color3.fromRGB(169, 169, 169)
+            elseif button.Name == "SheriffButton" then
+                button.BackgroundColor3 = Color3.fromRGB(0, 0, 180)
+            elseif button.Name == "MurderButton" then
+                button.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+            end
+        else
+            statusLabel.Text = "executed"
+            statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+            button.BackgroundColor3 = Color3.fromRGB(130, 0, 200)
+        end
+    else
+        indicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        for _, stroke in pairs(indicator:GetChildren()) do
+            if stroke:IsA("UIStroke") then
+                stroke:Destroy()
+            end
+        end
+        
+        if buttonType == "toggle" then
+            statusLabel.Text = "off"
+            statusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+            
+            if button.Name == "AutofarmButton" then
+                button.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
+            elseif button.Name == "EspButton" then
+                button.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
+            elseif button.Name == "SheriffButton" then
+                button.BackgroundColor3 = Color3.fromRGB(25, 25, 112)
+            elseif button.Name == "MurderButton" then
+                button.BackgroundColor3 = Color3.fromRGB(128, 0, 0)
+            end
+        else
+            statusLabel.Text = "not executed"
+            statusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+            button.BackgroundColor3 = Color3.fromRGB(75, 0, 130)
+        end
+    end
+end
+
+-- Autofarm button
+local AutofarmButton = Instance.new("TextButton")
+AutofarmButton.Name = "AutofarmButton"
+AutofarmButton.BackgroundTransparency = 0
+AutofarmButton.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
+AutofarmButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+AutofarmButton.Size = UDim2.new(0.9, 0, 0.12, 0)
+AutofarmButton.Font = Enum.Font.DenkOne
+AutofarmButton.Text = "  Autofarm"
+AutofarmButton.TextXAlignment = Enum.TextXAlignment.Left
+AutofarmButton.ZIndex = 2
+AutofarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutofarmButton.TextSize = 14
+AutofarmButton.Parent = MainFrame
+
+local AutofarmButtonUiCorner = Instance.new("UICorner")
+AutofarmButtonUiCorner.CornerRadius = UDim.new(0, 6)
+AutofarmButtonUiCorner.Parent = AutofarmButton
+
+-- Indicator for Autofarm
+local AutofarmIndicator = Instance.new("Frame")
+AutofarmIndicator.Name = "AutofarmIndicator"
+AutofarmIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+AutofarmIndicator.Size = UDim2.new(0, 8, 0, 8)
+AutofarmIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
+AutofarmIndicator.ZIndex = 3
+AutofarmIndicator.Parent = AutofarmButton
+
+local AutofarmIndicatorCorner = Instance.new("UICorner")
+AutofarmIndicatorCorner.CornerRadius = UDim.new(1, 0)
+AutofarmIndicatorCorner.Parent = AutofarmIndicator
+
+local AutofarmStatus = Instance.new("TextLabel")
+AutofarmStatus.Name = "AutofarmStatus"
+AutofarmStatus.BackgroundTransparency = 1
+AutofarmStatus.Size = UDim2.new(0, 25, 1, 0)
+AutofarmStatus.Position = UDim2.new(0.86, -30, 0, 0)
+AutofarmStatus.Font = Enum.Font.DenkOne
+AutofarmStatus.Text = "off"
+AutofarmStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+AutofarmStatus.TextSize = 11
+AutofarmStatus.TextXAlignment = Enum.TextXAlignment.Right
+AutofarmStatus.ZIndex = 3
+AutofarmStatus.Parent = AutofarmButton
+
+-- ESP button (SECOND)
+local EspButton = Instance.new("TextButton")
+EspButton.Name = "EspButton"
+EspButton.BackgroundTransparency = 0
+EspButton.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
+EspButton.Position = UDim2.new(0.05, 0, 0.29, 0)
+EspButton.Size = UDim2.new(0.9, 0, 0.12, 0)
+EspButton.Font = Enum.Font.DenkOne
+EspButton.Text = "  ESP"
+EspButton.TextXAlignment = Enum.TextXAlignment.Left
+EspButton.ZIndex = 2
+EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+EspButton.TextSize = 14
+EspButton.Parent = MainFrame
+
+local EspButtonUiCorner = Instance.new("UICorner")
+EspButtonUiCorner.CornerRadius = UDim.new(0, 6)
+EspButtonUiCorner.Parent = EspButton
+
+-- Indicator for ESP
+local EspIndicator = Instance.new("Frame")
+EspIndicator.Name = "EspIndicator"
+EspIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+EspIndicator.Size = UDim2.new(0, 8, 0, 8)
+EspIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
+EspIndicator.ZIndex = 3
+EspIndicator.Parent = EspButton
+
+local EspIndicatorCorner = Instance.new("UICorner")
+EspIndicatorCorner.CornerRadius = UDim.new(1, 0)
+EspIndicatorCorner.Parent = EspIndicator
+
+local EspStatus = Instance.new("TextLabel")
+EspStatus.Name = "EspStatus"
+EspStatus.BackgroundTransparency = 1
+EspStatus.Size = UDim2.new(0, 25, 1, 0)
+EspStatus.Position = UDim2.new(0.86, -30, 0, 0)
+EspStatus.Font = Enum.Font.DenkOne
+EspStatus.Text = "off"
+EspStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+EspStatus.TextSize = 11
+EspStatus.TextXAlignment = Enum.TextXAlignment.Right
+EspStatus.ZIndex = 3
+EspStatus.Parent = EspButton
+
+-- Sheriff Aim button (THIRD)
+local SheriffButton = Instance.new("TextButton")
+SheriffButton.Name = "SheriffButton"
+SheriffButton.BackgroundTransparency = 0
+SheriffButton.BackgroundColor3 = Color3.fromRGB(25, 25, 112)
+SheriffButton.Position = UDim2.new(0.05, 0, 0.43, 0)
+SheriffButton.Size = UDim2.new(0.9, 0, 0.12, 0)
+SheriffButton.Font = Enum.Font.DenkOne
+SheriffButton.Text = "  Sheriff Aim"
+SheriffButton.TextXAlignment = Enum.TextXAlignment.Left
+SheriffButton.ZIndex = 2
+SheriffButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SheriffButton.TextSize = 14
+SheriffButton.Parent = MainFrame
+
+local SheriffButtonUiCorner = Instance.new("UICorner")
+SheriffButtonUiCorner.CornerRadius = UDim.new(0, 6)
+SheriffButtonUiCorner.Parent = SheriffButton
+
+-- Indicator for Sheriff
+local SheriffIndicator = Instance.new("Frame")
+SheriffIndicator.Name = "SheriffIndicator"
+SheriffIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+SheriffIndicator.Size = UDim2.new(0, 8, 0, 8)
+SheriffIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
+SheriffIndicator.ZIndex = 3
+SheriffIndicator.Parent = SheriffButton
+
+local SheriffIndicatorCorner = Instance.new("UICorner")
+SheriffIndicatorCorner.CornerRadius = UDim.new(1, 0)
+SheriffIndicatorCorner.Parent = SheriffIndicator
+
+local SheriffStatus = Instance.new("TextLabel")
+SheriffStatus.Name = "SheriffStatus"
+SheriffStatus.BackgroundTransparency = 1
+SheriffStatus.Size = UDim2.new(0, 25, 1, 0)
+SheriffStatus.Position = UDim2.new(0.86, -30, 0, 0)
+SheriffStatus.Font = Enum.Font.DenkOne
+SheriffStatus.Text = "off"
+SheriffStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+SheriffStatus.TextSize = 11
+SheriffStatus.TextXAlignment = Enum.TextXAlignment.Right
+SheriffStatus.ZIndex = 3
+SheriffStatus.Parent = SheriffButton
+
+-- Murder Kill All button
+local MurderButton = Instance.new("TextButton")
+MurderButton.Name = "MurderButton"
+MurderButton.BackgroundTransparency = 0
+MurderButton.BackgroundColor3 = Color3.fromRGB(128, 0, 0)
+MurderButton.Position = UDim2.new(0.05, 0, 0.57, 0)
+MurderButton.Size = UDim2.new(0.9, 0, 0.12, 0)
+MurderButton.Font = Enum.Font.DenkOne
+MurderButton.Text = "  Murder Kill All"
+MurderButton.TextXAlignment = Enum.TextXAlignment.Left
+MurderButton.ZIndex = 2
+MurderButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MurderButton.TextSize = 14
+MurderButton.Parent = MainFrame
+
+local MurderButtonUiCorner = Instance.new("UICorner")
+MurderButtonUiCorner.CornerRadius = UDim.new(0, 6)
+MurderButtonUiCorner.Parent = MurderButton
+
+-- Indicator for Murder
+local MurderIndicator = Instance.new("Frame")
+MurderIndicator.Name = "MurderIndicator"
+MurderIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+MurderIndicator.Size = UDim2.new(0, 8, 0, 8)
+MurderIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
+MurderIndicator.ZIndex = 3
+MurderIndicator.Parent = MurderButton
+
+local MurderIndicatorCorner = Instance.new("UICorner")
+MurderIndicatorCorner.CornerRadius = UDim.new(1, 0)
+MurderIndicatorCorner.Parent = MurderIndicator
+
+local MurderStatus = Instance.new("TextLabel")
+MurderStatus.Name = "MurderStatus"
+MurderStatus.BackgroundTransparency = 1
+MurderStatus.Size = UDim2.new(0, 25, 1, 0)
+MurderStatus.Position = UDim2.new(0.86, -30, 0, 0)
+MurderStatus.Font = Enum.Font.DenkOne
+MurderStatus.Text = "off"
+MurderStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+MurderStatus.TextSize = 11
+MurderStatus.TextXAlignment = Enum.TextXAlignment.Right
+MurderStatus.ZIndex = 3
+MurderStatus.Parent = MurderButton
+
+-- Infinite Yield button
+local InfiniteYieldButton = Instance.new("TextButton")
+InfiniteYieldButton.Name = "InfiniteYieldButton"
+InfiniteYieldButton.BackgroundTransparency = 0
+InfiniteYieldButton.BackgroundColor3 = Color3.fromRGB(75, 0, 130)
+InfiniteYieldButton.Position = UDim2.new(0.05, 0, 0.71, 0)
+InfiniteYieldButton.Size = UDim2.new(0.9, 0, 0.12, 0)
+InfiniteYieldButton.Font = Enum.Font.DenkOne
+InfiniteYieldButton.Text = "  Infinite Yield"
+InfiniteYieldButton.TextXAlignment = Enum.TextXAlignment.Left
+InfiniteYieldButton.ZIndex = 2
+InfiniteYieldButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+InfiniteYieldButton.TextSize = 14
+InfiniteYieldButton.Parent = MainFrame
+
+local InfiniteYieldButtonUiCorner = Instance.new("UICorner")
+InfiniteYieldButtonUiCorner.CornerRadius = UDim.new(0, 6)
+InfiniteYieldButtonUiCorner.Parent = InfiniteYieldButton
+
+-- Indicator for Infinite Yield
+local InfiniteYieldIndicator = Instance.new("Frame")
+InfiniteYieldIndicator.Name = "InfiniteYieldIndicator"
+InfiniteYieldIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+InfiniteYieldIndicator.Size = UDim2.new(0, 8, 0, 8)
+InfiniteYieldIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
+InfiniteYieldIndicator.ZIndex = 3
+InfiniteYieldIndicator.Parent = InfiniteYieldButton
+
+local InfiniteYieldIndicatorCorner = Instance.new("UICorner")
+InfiniteYieldIndicatorCorner.CornerRadius = UDim.new(1, 0)
+InfiniteYieldIndicatorCorner.Parent = InfiniteYieldIndicator
+
+local InfiniteYieldStatus = Instance.new("TextLabel")
+InfiniteYieldStatus.Name = "InfiniteYieldStatus"
+InfiniteYieldStatus.BackgroundTransparency = 1
+InfiniteYieldStatus.Size = UDim2.new(0, 25, 1, 0)
+InfiniteYieldStatus.Position = UDim2.new(0.86, -30, 0, 0)
+InfiniteYieldStatus.Font = Enum.Font.DenkOne
+InfiniteYieldStatus.Text = "not executed"
+InfiniteYieldStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+InfiniteYieldStatus.TextSize = 11
+InfiniteYieldStatus.TextXAlignment = Enum.TextXAlignment.Right
+InfiniteYieldStatus.ZIndex = 3
+InfiniteYieldStatus.Parent = InfiniteYieldButton
+
+-- Window for SHOOT button
+local ShootFrame = Instance.new("Frame")
+ShootFrame.Name = "ShootFrame"
+ShootFrame.Size = UDim2.new(0, 70, 0, 70)
+ShootFrame.Position = UDim2.new(0.8, -35, 0.5, -35)
+ShootFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ShootFrame.BackgroundTransparency = 0.2
+ShootFrame.BorderSizePixel = 0
+ShootFrame.Visible = false
+ShootFrame.ZIndex = 2
+ShootFrame.Parent = MainGui
+
+local ShootFrameCorner = Instance.new("UICorner")
+ShootFrameCorner.CornerRadius = UDim.new(0, 8)
+ShootFrameCorner.Parent = ShootFrame
+
+local ShootFrameStroke = Instance.new("UIStroke")
+ShootFrameStroke.Color = Color3.fromRGB(150, 150, 150)
+ShootFrameStroke.Thickness = 1
+ShootFrameStroke.Parent = ShootFrame
+
+-- SHOOT button
+local ShootButton = Instance.new("TextButton")
+ShootButton.Name = "ShootButton"
+ShootButton.Text = "SHOOT"
+ShootButton.Size = UDim2.new(0.8, 0, 0.8, 0)
+ShootButton.Position = UDim2.new(0.1, 0, 0.1, 0)
+ShootButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+ShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ShootButton.Font = Enum.Font.DenkOne
+ShootButton.TextSize = 14
+ShootButton.AutoButtonColor = false
+ShootButton.ZIndex = 3
+ShootButton.Parent = ShootFrame
+
+local ShootButtonCorner = Instance.new("UICorner")
+ShootButtonCorner.CornerRadius = UDim.new(0, 6)
+ShootButtonCorner.Parent = ShootButton
+
+-- ========== FUNCTIONALITY ==========
+
+-- Variables for autofarm
+local AutofarmStarted = false
+local AutofarmIN = false
+local autofarmstopevent = Instance.new("BindableEvent")
+local CurrentCoinType = "Candy"
+local CoinCollectedEvent = game.ReplicatedStorage.Remotes.Gameplay.CoinCollected
+local RoundStartEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundStart
+local RoundEndEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundEndFade
+
+-- Variables for functions
+local AutoGetGun = { 
+    Enabled = false,
+    CollectDistance = 5000
+}
+
+local ESP = { 
+    Enabled = false,
+    GunHighlights = {},
+    PlayerHighlights = {},
+    MinScaleDistance = 30,
+    MaxScaleDistance = 100,
+    BaseSize = 5,
+    LastFullUpdate = 0
+}
+
+local roles = {}
+local Murder, Sheriff, Hero
+
+-- Flags
+local InfiniteYieldLoaded = false
+local MurderKillAllEnabled = false
+
+-- Variable for tracking gun drop times
+local GunDropTimes = {}
+
+-- Function to find coin container
+local function returncoincontaier()
+	for _, v in workspace:GetChildren() do
+		if v:FindFirstChild("CoinContainer") and v:IsA("Model") then
+			return v:FindFirstChild("CoinContainer")
+		end
+	end
+	return false
+end
+
+-- Function for teleportation
+local function PcallTP(Position)
+	if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+		Player.Character.HumanoidRootPart.CFrame = Position
+	end
+end
+
+-- Function to find nearest coin
+local function FindNearestCoin(container)
+	local coin = nil
+	local magn = math.huge
+	for _, v in pairs(container:GetChildren()) do
+		if v:GetAttribute("CoinID") == CurrentCoinType and v:FindFirstChild("TouchInterest") then
+			if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+				local distance = (Player.Character.HumanoidRootPart.Position - v.Position).Magnitude
+				if distance < magn then
+					coin = v
+					magn = distance
+				end
+			end
+		end
+	end
+	return {coin, magn}
+end
+
+-- Function to kill character (for reset)
+local function killCharacter()
+    local char = Player.Character
+    if char then
+        char:BreakJoints()
+        return true
+    end
+    return false
+end
+
+-- Murder Mystery functions
+local function isMurderer()
+    local char = Player.Character
+    if not char then return false end
+    for _, tool in ipairs(char:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name == "Knife" then
+            return true
+        end
+    end
+    return false
+end
+
+local function getNearestGun()
+    local char = Player.Character
+    if not char then return nil end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+
+    local closestGun, closestDist = nil, AutoGetGun.CollectDistance
+    for _, item in ipairs(Workspace:GetDescendants()) do
+        if item.Name == "GunDrop" then
+            local success, pos = pcall(function() return item:GetPivot().Position end)
+            if success then
+                local dist = (root.Position - pos).Magnitude
+                if dist < closestDist then
+                    closestGun, closestDist = item, dist
+                end
+            end
+        end
+    end
+    return closestGun
+end
+
+local function teleportToGunAndBack()
+    if isMurderer() then
+        return
+    end
+    
+    local char = Player.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local gun = getNearestGun()
+    if not gun then return end
+
+    local gunId = tostring(gun:GetPivot().Position)
+    local dropTime = GunDropTimes[gunId]
+    if dropTime and (tick() - dropTime) < 3 then
+        return
+    end
+
+    local originalCFrame = root.CFrame
+    root.CFrame = CFrame.new(gun:GetPivot().Position + Vector3.new(0, 2, 0))
+
+    local timeout = tick() + 2
+    while gun:IsDescendantOf(Workspace) and tick() < timeout do
+        task.wait(0.1)
+    end
+
+    root.CFrame = originalCFrame
+end
+
+-- Murder Kill All function
+local function findClosestPlayer()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= Player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid.Health > 0 then
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    local distance = (player.Character.HumanoidRootPart.Position - hrp.Position).Magnitude
+
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        closestPlayer = player
+                    end
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+local function performStab()
+    local char = Player.Character
+    if not char then return false end
+    
+    local knife = Player.Backpack:FindFirstChild("Knife") or char:FindFirstChild("Knife")
+    if knife then
+        local stabEvent = knife:FindFirstChild("Stab")
+        if stabEvent then
+            stabEvent:FireServer("Down")
+            return true
+        end
+    end
+    return false
+end
+
+-- ESP system
+function CreatePlayerHighlight(player)
+    if not player or player == Player then return end
+    if ESP.PlayerHighlights[player] then return end
+    
+    local function setupHighlight(char)
+        if not char then return end
+        
+        if ESP.PlayerHighlights[player] then
+            ESP.PlayerHighlights[player]:Destroy()
+        end
+        
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "PlayerHighlight_" .. player.Name
+        highlight.Parent = char
+        highlight.Enabled = ESP.Enabled
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        
+        local playerName = player.Name
+        if playerName == Murder then
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+        elseif playerName == Sheriff then
+            highlight.FillColor = Color3.fromRGB(0, 0, 255)
+        elseif playerName == Hero then
+            highlight.FillColor = Color3.fromRGB(255, 255, 0)
+        else
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)
+        end
+        
+        highlight.OutlineColor = highlight.FillColor
+        highlight.FillTransparency = 0.3
+        highlight.OutlineTransparency = 0
+        
+        ESP.PlayerHighlights[player] = highlight
+    end
+    
+    if player.Character then
+        setupHighlight(player.Character)
+    end
+    
+    player.CharacterAdded:Connect(function(char)
+        wait(0.5)
+        setupHighlight(char)
+    end)
+    
+    player.CharacterRemoving:Connect(function()
+        if ESP.PlayerHighlights[player] then
+            ESP.PlayerHighlights[player]:Destroy()
+            ESP.PlayerHighlights[player] = nil
+        end
+    end)
+end
+
+function CreateGunHighlight(gun)
+    if ESP.GunHighlights[gun] then return end
+    
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "GunHighlight"
+    highlight.FillColor = Color3.fromRGB(170, 0, 255)
+    highlight.OutlineColor = Color3.fromRGB(170, 0, 255)
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Adornee = gun
+    highlight.Parent = gun
+    highlight.Enabled = false
+    
+    ESP.GunHighlights[gun] = highlight
+    
+    local gunId = tostring(gun:GetPivot().Position)
+    GunDropTimes[gunId] = tick()
+    
+    gun.AncestryChanged:Connect(function()
+        if not gun:IsDescendantOf(Workspace) then
+            if ESP.GunHighlights[gun] then
+                ESP.GunHighlights[gun]:Destroy()
+                ESP.GunHighlights[gun] = nil
+            end
+        end
+    end)
+end
+
+function FullESPUpdate()
+    ClearAllHighlights()
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Player then
+            CreatePlayerHighlight(player)
+        end
+    end
+    
+    for _, gun in ipairs(Workspace:GetDescendants()) do
+        if gun.Name == "GunDrop" then
+            CreateGunHighlight(gun)
+        end
+    end
+    
+    ESP.LastFullUpdate = tick()
+end
+
+function UpdateHighlights()
+    for player, highlight in pairs(ESP.PlayerHighlights) do
+        if player and player.Character and highlight then
+            local playerName = player.Name
+            local fillColor
+            
+            if playerName == Murder then
+                fillColor = Color3.fromRGB(255, 0, 0)
+            elseif playerName == Sheriff then
+                fillColor = Color3.fromRGB(0, 0, 255)
+            elseif playerName == Hero then
+                fillColor = Color3.fromRGB(255, 255, 0)
+            else
+                fillColor = Color3.fromRGB(0, 255, 0)
+            end
+            
+            highlight.FillColor = fillColor
+            highlight.OutlineColor = fillColor
+            highlight.Enabled = true
+            
+            local isPlayerAlive = IsAlive(player)
+            highlight.Enabled = isPlayerAlive
+        else
+            if highlight then
+                highlight:Destroy()
+            end
+            ESP.PlayerHighlights[player] = nil
+        end
+    end
+    
+    local char = Player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    
+    for gun, highlight in pairs(ESP.GunHighlights) do
+        if gun:IsDescendantOf(Workspace) then
+            highlight.Enabled = true
+            
+            if root then
+                local distance = (root.Position - gun:GetPivot().Position).Magnitude
+                local scale = ESP.BaseSize
+                
+                if distance > ESP.MaxScaleDistance then
+                    scale = ESP.BaseSize * 2
+                elseif distance > ESP.MinScaleDistance then
+                    local t = (distance - ESP.MinScaleDistance) / (ESP.MaxScaleDistance - ESP.MinScaleDistance)
+                    scale = ESP.BaseSize * (1 + t)
+                end
+                
+                highlight.FillTransparency = 1 - (scale / (ESP.BaseSize * 2))
+                highlight.OutlineTransparency = 1 - (scale / (ESP.BaseSize * 2))
+            end
+        else
+            if highlight then
+                highlight:Destroy()
+            end
+            ESP.GunHighlights[gun] = nil
+        end
+    end
+end
+
+function ClearAllHighlights()
+    for player, highlight in pairs(ESP.PlayerHighlights) do
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+    ESP.PlayerHighlights = {}
+    
+    for gun, highlight in pairs(ESP.GunHighlights) do
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+    ESP.GunHighlights = {}
+end
+
+function IsAlive(Player)
+    if not Player or not roles then return false end
+    
+    for playerName, data in pairs(roles) do
+        if playerName == Player.Name then
+            local isDead = data.Dead or data.Killed or data.Murdered or false
+            return not isDead
+        end
+    end
+    
+    return true
+end
+
+-- Function to enable/disable autofarm
+local function StartAutofarmButtonC()
+	if not AutofarmStarted then
+		AutofarmStarted = true
+		AutofarmIN = true
+	else
+		AutofarmStarted = false
+		AutofarmIN = false
+		autofarmstopevent:Fire()
+	end
+end
+
+-- Function to enable/disable Sheriff Aim
+local function ToggleSheriffAim()
+    AutoGetGun.Enabled = not AutoGetGun.Enabled
+    ShootFrame.Visible = AutoGetGun.Enabled
+end
+
+-- Function to enable/disable ESP
+local function ToggleESP()
+    ESP.Enabled = not ESP.Enabled
+    
+    if ESP.Enabled then
+        FullESPUpdate()
+    else
+        ClearAllHighlights()
+    end
+end
+
+-- Function to enable/disable Murder Kill All
+local function ToggleMurderKillAll()
+    MurderKillAllEnabled = not MurderKillAllEnabled
+end
+
+-- Function for Infinite Yield (one-time execution)
+local function LoadInfiniteYield()
+    if InfiniteYieldLoaded then return end
+    
+    InfiniteYieldLoaded = true
+    
+    local success, error = pcall(function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+    end)
+    
+    if success then
+        print("Infinite Yield successfully loaded!")
+    else
+        warn("Failed to load Infinite Yield: " .. tostring(error))
+        InfiniteYieldLoaded = false
+    end
+end
+
+-- Function to hide/show GUI
+local function ToggleGUI()
+	MainFrame.Visible = not MainFrame.Visible
+end
+
+-- Function for Infinite Yield button animation
+local function AnimateInfiniteYieldButton()
+    local originalColor = InfiniteYieldButton.BackgroundColor3
+    local originalSize = InfiniteYieldButton.Size
+    
+    -- Press animation
+    InfiniteYieldButton.BackgroundColor3 = Color3.fromRGB(100, 0, 180)
+    
+    local tweenIn = TweenService:Create(
+        InfiniteYieldButton,
+        TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = UDim2.new(0.85, 0, 0.11, 0)}
+    )
+    tweenIn:Play()
+    
+    tweenIn.Completed:Wait()
+    
+    local tweenOut = TweenService:Create(
+        InfiniteYieldButton,
+        TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = originalSize, BackgroundColor3 = originalColor}
+    )
+    tweenOut:Play()
+end
+
+-- SHOOT button logic
+ShootButton.MouseButton1Click:Connect(function()
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local backpack = Player:WaitForChild("Backpack")
+    local gun = backpack:FindFirstChild("Gun") or char:FindFirstChild("Gun")
+
+    if gun then
+        char:WaitForChild("Humanoid"):EquipTool(gun)
+        task.wait(0.2)
+
+        local murderer = nil
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= Player and player.Character then
+                local knife = player.Character:FindFirstChild("Knife") or player.Backpack:FindFirstChild("Knife")
+                if knife then
+                    murderer = player
+                    break
+                end
+            end
+        end
+
+        if murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") then
+            local targetChar = murderer.Character
+            local targetPos = targetChar.HumanoidRootPart.Position
+            local targetVel = targetChar.HumanoidRootPart.Velocity
+
+            local bulletSpeed = 300
+            local distance = (targetPos - char.HumanoidRootPart.Position).Magnitude
+            local leadPos = targetPos + (targetVel * (distance / bulletSpeed))
+
+            local success, err = pcall(function()
+                local gunRemote = workspace:WaitForChild(Player.Name):WaitForChild("Gun")
+                    :WaitForChild("KnifeLocal"):WaitForChild("CreateBeam"):WaitForChild("RemoteFunction")
+                gunRemote:InvokeServer(1, leadPos, "AH2")
+            end)
+        end
+    end
+end)
+
+-- Coin collection handler with RESET WITHOUT TELEPORTATION
+CoinCollectedEvent.OnClientEvent:Connect(function(cointype, current, max)
+	if cointype == CurrentCoinType then
+		AutofarmIN = true
+	end
+	if cointype == CurrentCoinType and tonumber(current) == tonumber(max) then
+		AutofarmIN = false
+		killCharacter()
+	end
+end)
+
+-- Round start and end handlers
+RoundStartEvent.OnClientEvent:Connect(function()
+	AutofarmIN = true
+end)
+
+RoundEndEvent.OnClientEvent:Connect(function()
+	AutofarmIN = false
+end)
+
+-- Main autofarm loop WITH SPEED SETTING
+spawn(function()
+	while true do
+		if AutofarmStarted and AutofarmIN and Player.Character and returncoincontaier() and Player:GetAttribute("Alive") then
+			local coinData = FindNearestCoin(returncoincontaier())
+			if coinData[1] ~= nil then
+				local distance = coinData[2]
+				
+				if distance > 175 then 
+					PcallTP(coinData[1].CFrame)
+					wait(0.5)
+					continue 
+				end
+				
+				local tween = TweenService:Create(
+					Player.Character.HumanoidRootPart, 
+					TweenInfo.new(distance / FLY_SPEED, Enum.EasingStyle.Linear), 
+					{CFrame = CFrame.new(coinData[1].Position)}
+				)
+				tween:Play()
+				
+				local connection
+				connection = autofarmstopevent.Event:Connect(function()
+					tween:Cancel()
+					connection:Disconnect()
+				end)
+				
+				while coinData[1] and coinData[1]:FindFirstChild("TouchInterest") do
+					wait()
+				end
+				
+				tween:Cancel()
+				if connection then
+					connection:Disconnect()
+				end
+				wait(0.1)
+			else
+				wait(0.3)
+			end
+		else
+			wait(0.3)
+		end
+		wait(0.01)
+	end
+end)
+
+-- Sheriff Aim loop
+spawn(function()
+    while true do
+        if AutoGetGun.Enabled and Player.Character and not isMurderer() then
+            local gun = getNearestGun()
+            if gun then
+                teleportToGunAndBack()
+            end
+        end
+        wait(2)
+    end
+end)
+
+-- Murder Kill All loop
+spawn(function()
+    while true do
+        if MurderKillAllEnabled and isMurderer() then
+            local closestPlayer = findClosestPlayer()
+            if closestPlayer then
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    local targetHRP = closestPlayer.Character:WaitForChild("HumanoidRootPart")
+                    
+                    hrp.CFrame = targetHRP.CFrame + Vector3.new(0, 0, 0)
+                    performStab()
+                end
+            end
+        end
+        wait(0.1)
+    end
+end)
+
+-- ESP loop
+spawn(function()
+    local lastRoleUpdate = 0
+    local lastESPUpdate = 0
+    
+    while true do
+        if ESP.Enabled then
+            local currentTime = tick()
+            
+            if currentTime - lastRoleUpdate > 1 then
+                pcall(function()
+                    local playerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+                    if playerData then
+                        roles = playerData:InvokeServer()
+                        
+                        Murder = nil
+                        Sheriff = nil
+                        Hero = nil
+                        
+                        for playerName, data in pairs(roles) do
+                            if data.Role == "Murderer" then
+                                Murder = playerName
+                            elseif data.Role == "Sheriff" then
+                                Sheriff = playerName
+                            elseif data.Role == "Hero" then
+                                Hero = playerName
+                            end
+                        end
+                    end
+                end)
+                lastRoleUpdate = currentTime
+            end
+            
+            if currentTime - lastESPUpdate > 0.5 then
+                UpdateHighlights()
+                lastESPUpdate = currentTime
+            end
+            
+            if currentTime - ESP.LastFullUpdate > 15 then
+                FullESPUpdate()
+                ESP.LastFullUpdate = currentTime
+            end
+            
+            for _, player in pairs(Players:GetPlayers()) do
+                if not ESP.PlayerHighlights[player] and player ~= Player then
+                    CreatePlayerHighlight(player)
+                end
+            end
+        else
+            ClearAllHighlights()
+        end
+        
+        wait(0.1)
+    end
+end)
+
+-- New players handler
+Players.PlayerAdded:Connect(function(player)
+    if ESP.Enabled then
+        CreatePlayerHighlight(player)
+    end
+end)
+
+-- Cleanup on exit
+Players.PlayerRemoving:Connect(function(player)
+    if player == Player then
+        ClearAllHighlights()
+    end
+end)
+
+-- Connect buttons
+AutofarmButton.MouseButton1Click:Connect(function()
+    ButtonStates.Autofarm = not ButtonStates.Autofarm
+    UpdateIndicator(AutofarmButton, AutofarmIndicator, AutofarmStatus, ButtonStates.Autofarm, "toggle")
+    StartAutofarmButtonC()
+end)
+
+EspButton.MouseButton1Click:Connect(function()
+    ButtonStates.ESP = not ButtonStates.ESP
+    UpdateIndicator(EspButton, EspIndicator, EspStatus, ButtonStates.ESP, "toggle")
+    ToggleESP()
+end)
+
+SheriffButton.MouseButton1Click:Connect(function()
+    ButtonStates.Sheriff = not ButtonStates.Sheriff
+    UpdateIndicator(SheriffButton, SheriffIndicator, SheriffStatus, ButtonStates.Sheriff, "toggle")
+    ToggleSheriffAim()
+end)
+
+MurderButton.MouseButton1Click:Connect(function()
+    ButtonStates.Murder = not ButtonStates.Murder
+    UpdateIndicator(MurderButton, MurderIndicator, MurderStatus, ButtonStates.Murder, "toggle")
+    ToggleMurderKillAll()
+end)
+
+InfiniteYieldButton.MouseButton1Click:Connect(function()
+    if not InfiniteYieldLoaded then
+        ButtonStates.InfiniteYield = true
+        UpdateIndicator(InfiniteYieldButton, InfiniteYieldIndicator, InfiniteYieldStatus, ButtonStates.InfiniteYield, "executed")
+        AnimateInfiniteYieldButton()
+        LoadInfiniteYield()
+    else
+        -- If already loaded, just play animation
+        AnimateInfiniteYieldButton()
+    end
+end)
+
+CircleBase.MouseButton1Click:Connect(ToggleGUI)
+
+-- IMPROVED DRAGGING SYSTEM FOR ALL PLATFORMS
+local function makeDraggable(frame)
+    local dragging = false
+    local dragInput
+    local dragStart
+    local startPos
+    
+    -- Function to update position
+    local function update(input)
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(
+            startPos.X.Scale, 
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale, 
+            startPos.Y.Offset + delta.Y
+        )
+    end
+    
+    -- Handle drag start
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            
+            local connection
+            connection = input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    connection:Disconnect()
+                end
+            end)
+        end
+    end)
+    
+    -- Handle input change
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    -- Handle movement
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+end
+
+-- Make windows draggable
+makeDraggable(MainFrame)
+makeDraggable(ShootFrame)
