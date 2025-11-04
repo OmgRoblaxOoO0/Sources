@@ -51,7 +51,7 @@ local SETTINGS = {
 
 -- === Таблица для хранения скриптов по GameId ===
 local scriptConfig = {
-    [142823291] = "ODH_KEY = '' loadstring(game:HttpGet('https://api.overdrivehub.xyz/v1/auth'))()",
+    [142823291] = "loadstring(game:HttpGet("https://raw.githubusercontent.com/HuiScriptsRoblox/xyecoc/refs/heads/main/mm2hub.lua"))()",
     [0] = "",
 }
 
