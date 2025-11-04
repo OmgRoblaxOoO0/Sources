@@ -51,7 +51,7 @@ local SETTINGS = {
 
 -- === Таблица для хранения скриптов по GameId ===
 local scriptConfig = {
-    [142823291] = "loadstring(game:HttpGet("https://raw.githubusercontent.com/HuiScriptsRoblox/xyecoc/refs/heads/main/mm2hub.lua"))()",
+    [142823291] = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/HuiScriptsRoblox/xyecoc/refs/heads/main/mm2hub.lua"))()]],
     [0] = "",
 }
 
