@@ -1,1 +1,462 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
+-- === НАСТРОЙКИ ===
+local SETTINGS = {
+    -- Основные настройки
+    loadTime = 30, -- Время загрузки в секундах
+    
+    -- ОБЩИЙ ШРИФТ
+    font = Enum.Font.DenkOne,
+    
+    -- Настройки надписи
+    titleText = "HUI SCRIPTS",
+    titleSize = 48,
+    titleColor = Color3.fromRGB(255, 255, 255),
+    
+    -- Настройки подзаголовка
+    subtitleText = "script from video loader",
+    subtitleSize = 18,
+    subtitleColor = Color3.fromRGB(150, 150, 150),
+    
+    -- Настройки ASCII арта
+    asciiArtColor = Color3.fromRGB(150, 150, 150),
+    
+    -- Настройки процентов
+    percentSize = 18,
+    percentColor = Color3.fromRGB(200, 200, 200),
+    
+    -- Настройки статусных надписей
+    statusSize = 14,
+    statusColor = Color3.fromRGB(150, 150, 150),
+    
+    -- Настройки полосы загрузки
+    barColor = Color3.fromRGB(255, 255, 255),
+    barBackgroundColor = Color3.fromRGB(50, 50, 50),
+    barWidth = 400,
+    barHeight = 15,
+    barCornerRadius = 2,
+    
+    -- Настройки уведомления
+    notificationWidth = 300,
+    notificationHeight = 70,
+    notificationBgColor = Color3.fromRGB(20, 20, 20),
+    notificationBgTransparency = 0.2,
+    successTextColor = Color3.fromRGB(255, 255, 255),
+    successTextSize = 18,
+    foundTextColor = Color3.fromRGB(200, 200, 200),
+    foundTextSize = 14
+}
+
+-- === Таблица для хранения скриптов по GameId ===
+local scriptConfig = {
+    [142823291] = "ODH_KEY = '' loadstring(game:HttpGet('https://api.overdrivehub.xyz/v1/auth'))()",
+    [0] = "",
+}
+
+-- Тексты статусов и их временные интервалы
+local statusMessages = {
+    {text = "Defining the game", endTime = 13},
+    {text = "Looking for a script", endTime = 24},
+    {text = "Loading the script", endTime = 30}
+}
+
+-- ASCII арт (уменьшенный)
+local asciiArt = {
+    "---------------------------::.%@@@@@@@@@@@@@@-::::-------------------------------------",
+    "-------------------------:.@@@@@-:::::::::%@@@@@@@.:-----------------------------------",
+    "------------------------.#@@*.::----------::::.@@@@@:----------------------------------",
+    "-----------------------:@@@.:------------------::.@@.----------------------------------",
+    "-----------------------:@@@:-----------::::::::::.@@@.---------------------------------",
+    "----------------------:@@@*:--------:::@@@@@@@@@@@@@@@.:-------------------------------",
+    "----------------------:@@@.-------:.@@@@@.........:.@@@@::-----------------------------",
+    "-------------------:::.@@@:------.@@@.::..+@@@@@@@.:::.@@@:----------------------------",
+    "---------------:::.%@@@@@@:-----:%@@.--.@@@@@@@@@@@@:--.@@:----------------------------",
+    "-------------:.@@@@@@*.@@@:-----:@@.--:*@@@@@@@@@@@+:--.@@:-----------:::-=:::::::-----",
+    "------------:@@@@%.::::@@@:-----:@@.---::.@@@@@#.:::--.@@@:----------.@@@@@@@@@@@=.::--",
+    "------------:@@@.:----:@@@:-----:@@@.-----::::::----:.*@@.----------:@@:::::::.*@@@@@.:",
+    "------------.@@.------:@@@:------.@@@.:---:::::::::.+@@@.----------:.@@:-------:::::@@@",
+    "-----------:@@@:------:@@%:-------.@@@@.:.#@@@@@@@@@@@.:-----::::::@@@@:------------.@@%",
+    "-----------:@@@:------:@@:---------:.%@@@@@@@@=.:.@@@.---:::.@@@@@@@@.:-------------:@@@",
+    "-----------:@@@:------:@@:-----------:::::::::---:@@@.::.@@@@@@+.::::---------------.@@",
+    "-----------:@@@:------:@@:--------------------:::.*@@@@@@@@@.:::-------------------.@@@",
+    "-----------:@@@:------:@@:-----------------::.@@@@@@@@.:::::---------------------:.@@@.",
+    "-----------:@@@.------:@@:--------------::.@@@@@*.::::----------------------::::.@@@=.-",
+    "-----------:#@@+:-----:@@:------------:.@@@@@.:::----------------------::::.@@@@@@::---",
+    "------------.@@@:-----.@@:-----------.@@@@.::---------------------::::.#@@@@@@@.::-----",
+    "------------:@@@.::::.+@@:----------:@@@.:--------------------:::.+@@@@@@+.::::--------",
+    "-------------:=@@@@@@@@@@:----------.@@.---------------------.@@@@@@=.::::-------------",
+    "---------------:::@@@@@@@:----------+@@:--------------------:@@@ :::-------------------",
+    "------------------:::.@@@:----------.@@:---------------------.@@@:---------------------",
+    "---------------------:@@@:----------.@@.----------------------.@@----------------------",
+    "----------------------.@@:---------:@@@@.---------:.=.--------:@@=---------------------",
+    "----------------------:@@@.------::.@@@@@.-------.+@@@.:------.@@.---------------------",
+    "-----------------------:@@#.::::.+@@@@ @@@.:::::.@@@+@@@.::::.@@#:---------------------",
+    "------------------------.@@@@@@@@@@-.:-:.@@@@@@@@@+.:.#@@@@@@@@.:----------------------",
+    "-------------------------::::::::::------::.@@@.:::---::.@@@@.:------------------------"
+}
+
+local player = Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "LoadingScreen"
+gui.IgnoreGuiInset = true
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.DisplayOrder = 999
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Основной фрейм
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(1, 0, 1, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = gui
+
+-- Надпись HUI SCRIPTS (ЦЕНТР)
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(0, 400, 0, 60)
+titleLabel.Position = UDim2.new(0.5, 0, 0.4, 0)
+titleLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+titleLabel.Text = SETTINGS.titleText
+titleLabel.TextColor3 = SETTINGS.titleColor
+titleLabel.TextSize = SETTINGS.titleSize
+titleLabel.Font = SETTINGS.font
+titleLabel.BackgroundTransparency = 1
+titleLabel.AutoLocalize = false
+titleLabel.Parent = mainFrame
+
+-- Подзаголовок (script from video loader)
+local subtitleLabel = Instance.new("TextLabel")
+subtitleLabel.Size = UDim2.new(0, 400, 0, 30)
+subtitleLabel.Position = UDim2.new(0.5, 0, 0.47, 0)
+subtitleLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+subtitleLabel.Text = SETTINGS.subtitleText
+subtitleLabel.TextColor3 = SETTINGS.subtitleColor
+subtitleLabel.TextSize = SETTINGS.subtitleSize
+subtitleLabel.Font = SETTINGS.font
+subtitleLabel.BackgroundTransparency = 1
+subtitleLabel.AutoLocalize = false
+subtitleLabel.Parent = mainFrame
+
+-- ASCII арт (отцентрован между надписью и полосой)
+local asciiContainer = Instance.new("Frame")
+asciiContainer.Size = UDim2.new(0, 600, 0, 120)
+asciiContainer.Position = UDim2.new(0.5, 0, 0.66, 0)
+asciiContainer.AnchorPoint = Vector2.new(0.5, 0.5)
+asciiContainer.BackgroundTransparency = 1
+asciiContainer.Parent = mainFrame
+
+-- Создаем текстовые лейблы для ASCII арта
+for i, line in ipairs(asciiArt) do
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 0, 4)
+    textLabel.Position = UDim2.new(0, 0, 0, (i-1) * 4)
+    textLabel.Text = line
+    textLabel.TextColor3 = SETTINGS.asciiArtColor
+    textLabel.TextSize = 3
+    textLabel.Font = Enum.Font.Code
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextXAlignment = Enum.TextXAlignment.Center
+    textLabel.AutoLocalize = false
+    textLabel.Parent = asciiContainer
+end
+
+-- Фон полосы загрузки
+local barBackground = Instance.new("Frame")
+barBackground.Size = UDim2.new(0, SETTINGS.barWidth, 0, SETTINGS.barHeight)
+barBackground.Position = UDim2.new(0.5, 0, 0.85, 0)
+barBackground.AnchorPoint = Vector2.new(0.5, 0.5)
+barBackground.BackgroundColor3 = SETTINGS.barBackgroundColor
+barBackground.BorderSizePixel = 0
+barBackground.Parent = mainFrame
+
+-- Закругление фона
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, SETTINGS.barCornerRadius)
+corner.Parent = barBackground
+
+-- Обводка полосы загрузки
+local barStroke = Instance.new("UIStroke")
+barStroke.Color = Color3.fromRGB(200, 200, 200)
+barStroke.Thickness = 1
+barStroke.Transparency = 0.5
+barStroke.Parent = barBackground
+
+-- Градиент для полосы загрузки (СЕРЫЙ С ПЕРЕХОДАМИ)
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 180, 180)), -- Светло-серый
+    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(220, 220, 220)), -- Очень светлый серый
+    ColorSequenceKeypoint.new(0.7, Color3.fromRGB(220, 220, 220)), -- Очень светлый серый
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180)) -- Светло-серый
+})
+
+-- Сама полоса загрузки
+local progressBar = Instance.new("Frame")
+progressBar.Size = UDim2.new(0, 0, 1, 0)
+progressBar.Position = UDim2.new(0, 0, 0, 0)
+progressBar.BackgroundColor3 = SETTINGS.barColor
+progressBar.BorderSizePixel = 0
+progressBar.Parent = barBackground
+gradient.Parent = progressBar
+
+-- Закругление полосы
+local progressCorner = Instance.new("UICorner")
+progressCorner.CornerRadius = UDim.new(0, SETTINGS.barCornerRadius)
+progressCorner.Parent = progressBar
+
+-- Плавная анимация градиента (справа налево)
+local gradientConnection
+local function startGradientAnimation()
+    if gradientConnection then
+        gradientConnection:Disconnect()
+    end
+    
+    local animationSpeed = 2 -- Скорость анимации
+    local gradientWidth = 0.4 -- Ширина градиентной полосы
+    
+    gradientConnection = RunService.Heartbeat:Connect(function()
+        local time = tick()
+        -- Движение справа налево с плавным циклом
+        local offset = (time * animationSpeed) % 2
+        
+        if offset > 1 then
+            offset = 2 - offset -- Плавное возвращение
+        end
+        
+        -- Градиент движется справа налево
+        local startOffset = 1 - offset * (1 + gradientWidth)
+        local endOffset = startOffset + gradientWidth
+        
+        gradient.Offset = Vector2.new(startOffset, 0)
+    end)
+end
+
+-- ПРОЦЕНТЫ (отдельно рядом с полосой)
+local percentLabel = Instance.new("TextLabel")
+percentLabel.Size = UDim2.new(0, 50, 0, SETTINGS.barHeight)
+percentLabel.Position = UDim2.new(0.5, SETTINGS.barWidth/2 + 10, 0.85, 0)
+percentLabel.AnchorPoint = Vector2.new(0, 0.5)
+percentLabel.Text = "0%"
+percentLabel.TextColor3 = SETTINGS.percentColor
+percentLabel.TextSize = SETTINGS.percentSize
+percentLabel.Font = SETTINGS.font
+percentLabel.BackgroundTransparency = 1
+percentLabel.TextXAlignment = Enum.TextXAlignment.Left
+percentLabel.AutoLocalize = false
+percentLabel.Parent = mainFrame
+
+-- Текст статуса (под полосой)
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(0, SETTINGS.barWidth + 50, 0, 20)
+statusLabel.Position = UDim2.new(0.5, 0, 0.87, 0)
+statusLabel.AnchorPoint = Vector2.new(0.5, 0)
+statusLabel.Text = ""
+statusLabel.TextColor3 = SETTINGS.statusColor
+statusLabel.TextSize = SETTINGS.statusSize
+statusLabel.Font = SETTINGS.font
+statusLabel.BackgroundTransparency = 1
+statusLabel.TextXAlignment = Enum.TextXAlignment.Center
+statusLabel.AutoLocalize = false
+statusLabel.Parent = mainFrame
+
+-- Создаем уведомление об успешном выполнении
+local notificationFrame = Instance.new("Frame")
+notificationFrame.Size = UDim2.new(0, SETTINGS.notificationWidth, 0, SETTINGS.notificationHeight)
+notificationFrame.Position = UDim2.new(1, 10, 1, -20)
+notificationFrame.AnchorPoint = Vector2.new(1, 1)
+notificationFrame.BackgroundColor3 = SETTINGS.notificationBgColor
+notificationFrame.BackgroundTransparency = SETTINGS.notificationBgTransparency
+notificationFrame.BorderSizePixel = 0
+notificationFrame.Visible = false
+notificationFrame.Parent = gui
+
+-- Закругление уведомления
+local notificationCorner = Instance.new("UICorner")
+notificationCorner.CornerRadius = UDim.new(0, 8)
+notificationCorner.Parent = notificationFrame
+
+-- Обводка уведомления
+local notificationStroke = Instance.new("UIStroke")
+notificationStroke.Color = Color3.fromRGB(100, 100, 100)
+notificationStroke.Thickness = 1
+notificationStroke.Parent = notificationFrame
+
+-- Верхняя надпись (Successfully executed)
+local successLabel = Instance.new("TextLabel")
+successLabel.Size = UDim2.new(1, -20, 0.5, 0)
+successLabel.Position = UDim2.new(0, 10, 0.35, 0)
+successLabel.AnchorPoint = Vector2.new(0, 0.5)
+successLabel.Text = "Successfully executed"
+successLabel.TextColor3 = SETTINGS.successTextColor
+successLabel.TextSize = SETTINGS.successTextSize
+successLabel.Font = SETTINGS.font
+successLabel.BackgroundTransparency = 1
+successLabel.TextXAlignment = Enum.TextXAlignment.Left
+successLabel.AutoLocalize = false
+successLabel.Parent = notificationFrame
+
+-- Нижняя надпись (Script for game has been found)
+local foundLabel = Instance.new("TextLabel")
+foundLabel.Size = UDim2.new(1, -20, 0.5, 0)
+foundLabel.Position = UDim2.new(0, 10, 0.75, 0)
+foundLabel.AnchorPoint = Vector2.new(0, 0.5)
+foundLabel.Text = "Script for game has been found"
+foundLabel.TextColor3 = SETTINGS.foundTextColor
+foundLabel.TextSize = SETTINGS.foundTextSize
+foundLabel.Font = SETTINGS.font
+foundLabel.BackgroundTransparency = 1
+foundLabel.TextXAlignment = Enum.TextXAlignment.Left
+foundLabel.AutoLocalize = false
+foundLabel.Parent = notificationFrame
+
+local startTime = tick()
+local connection
+local currentStatusIndex = 1
+
+local function resetLoading()
+    startTime = tick()
+    currentStatusIndex = 1
+    progressBar.Size = UDim2.new(0, 0, 1, 0)
+    percentLabel.Text = "0%"
+    statusLabel.Text = ""
+    statusLabel.TextColor3 = SETTINGS.statusColor
+    titleLabel.TextTransparency = 0
+    subtitleLabel.TextTransparency = 0
+    percentLabel.TextTransparency = 0
+    statusLabel.TextTransparency = 0
+    barBackground.BackgroundTransparency = 0
+    progressBar.BackgroundTransparency = 0
+    barStroke.Transparency = 0.5
+    mainFrame.BackgroundTransparency = 0.2
+    
+    -- Сбрасываем прозрачность ASCII арта
+    for i, child in ipairs(asciiContainer:GetChildren()) do
+        if child:IsA("TextLabel") then
+            child.TextTransparency = 0
+        end
+    end
+    
+    -- Запускаем анимацию градиента
+    startGradientAnimation()
+end
+
+local function showSuccessNotification()
+    notificationFrame.Visible = true
+    notificationFrame.Position = UDim2.new(1, 10, 1, -20)
+    
+    local tweenIn = TweenService:Create(notificationFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Position = UDim2.new(1, -10, 1, -20)
+    })
+    
+    tweenIn:Play()
+    
+    wait(6)
+    
+    local tweenOut = TweenService:Create(notificationFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Position = UDim2.new(1, 10, 1, -20)
+    })
+    
+    tweenOut:Play()
+    
+    wait(0.5)
+    notificationFrame.Visible = false
+end
+
+local function startHeartbeatConnection()
+    connection = RunService.Heartbeat:Connect(function()
+        local elapsed = tick() - startTime
+        local progress = math.min(elapsed / SETTINGS.loadTime, 1)
+        local percent = math.floor(progress * 100)
+        
+        progressBar.Size = UDim2.new(progress, 0, 1, 0)
+        percentLabel.Text = percent .. "%"
+        
+        if currentStatusIndex <= #statusMessages then
+            local currentStatus = statusMessages[currentStatusIndex]
+            if elapsed <= currentStatus.endTime then
+                statusLabel.Text = currentStatus.text
+            else
+                currentStatusIndex = currentStatusIndex + 1
+                if currentStatusIndex <= #statusMessages then
+                    statusLabel.Text = statusMessages[currentStatusIndex].text
+                end
+            end
+        end
+        
+        if progress >= 1 then
+            connection:Disconnect()
+            if gradientConnection then
+                gradientConnection:Disconnect()
+            end
+            
+            local currentPlaceId = game.PlaceId
+            local scriptToExecute = scriptConfig[currentPlaceId]
+            
+            if scriptToExecute and scriptToExecute ~= "" then
+                local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                
+                local mainTween = TweenService:Create(mainFrame, tweenInfo, {BackgroundTransparency = 1})
+                local titleTween = TweenService:Create(titleLabel, tweenInfo, {TextTransparency = 1})
+                local subtitleTween = TweenService:Create(subtitleLabel, tweenInfo, {TextTransparency = 1})
+                local percentTween = TweenService:Create(percentLabel, tweenInfo, {TextTransparency = 1})
+                local statusTween = TweenService:Create(statusLabel, tweenInfo, {TextTransparency = 1})
+                local barBgTween = TweenService:Create(barBackground, tweenInfo, {BackgroundTransparency = 1})
+                local barTween = TweenService:Create(progressBar, tweenInfo, {BackgroundTransparency = 1})
+                local strokeTween = TweenService:Create(barStroke, tweenInfo, {Transparency = 1})
+                
+                -- Добавляем твины для ASCII арта
+                for i, child in ipairs(asciiContainer:GetChildren()) do
+                    if child:IsA("TextLabel") then
+                        local asciiTween = TweenService:Create(child, tweenInfo, {TextTransparency = 1})
+                        asciiTween:Play()
+                    end
+                end
+                
+                mainTween:Play()
+                titleTween:Play()
+                subtitleTween:Play()
+                percentTween:Play()
+                statusTween:Play()
+                barBgTween:Play()
+                barTween:Play()
+                strokeTween:Play()
+                
+                wait(0.5)
+                
+                local success, errorMessage = pcall(function()
+                    loadstring(scriptToExecute)()
+                end)
+                
+                if not success then
+                    warn("Script execution error: " .. tostring(errorMessage))
+                else
+                    showSuccessNotification()
+                end
+                
+                wait(7)
+                gui:Destroy()
+            else
+                progressBar.Size = UDim2.new(1, 0, 1, 0)
+                percentLabel.Text = "100%"
+                
+                statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+                statusLabel.Text = "Mistake: The script for the game was not found"
+                wait(5)
+                
+                statusLabel.TextColor3 = SETTINGS.statusColor
+                statusLabel.Text = "Retrying to find the script..."
+                wait(5)
+                
+                resetLoading()
+                startHeartbeatConnection()
+            end
+        end
+    end)
+end
+
+-- Запускаем анимацию градиента при старте
+startGradientAnimation()
+startHeartbeatConnection()
