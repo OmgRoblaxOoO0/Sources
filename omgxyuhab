@@ -1,10 +1,58 @@
-
 if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
--- SPEED SETTING (change value as desired)
-local FLY_SPEED = 25 -- Fly speed to coins (can be changed from 10 to 50)
+-- ========== НАСТРОЙКИ ==========
+-- Скорость фарма
+local FLY_SPEED = 30 -- Скорость полета к монетам (можно менять от 10 до 50)
+
+-- Настройки валюты для фарма
+local EVENT_COIN_TYPE = "Candy" -- Валюта для Event Farm
+local COINS_FARM_TYPE = "Coin" -- Валюта для Coins Farm
+
+-- Настройки GUI
+local GUI_TITLE = "❄️ Hui Scripts MM2 ❄️" -- Название GUI
+local GUI_BG_COLOR = Color3.fromRGB(121, 237, 226) -- Цвет фона (RGB)
+local GUI_BG_TRANSPARENCY = 0.4 -- Прозрачность фона (0 = непрозрачный, 1 = невидимый)
+local TEXT_COLOR = Color3.fromRGB(24, 35, 82) -- Цвет текста заголовка и подсказок
+
+-- Настройки текста кнопок
+local EVENT_FARM_TEXT = "  Event Farm [soon]"
+local COINS_FARM_TEXT = "  Coins Farm"
+local ESP_TEXT = "  ESP"
+local SHERIFF_TEXT = "  Sheriff Aim"
+local MURDER_TEXT = "  Murder Kill All"
+local INFINITE_YIELD_TEXT = "  Infinite Yield"
+local HELP_TEXT = "[ ! ] best commands:\n1. noclip\n2. fly"
+
+-- Настройки цветов кнопок (в выключенном состоянии)
+local EVENT_FARM_COLOR = Color3.fromRGB(105, 105, 105)
+local COINS_FARM_COLOR = Color3.fromRGB(105, 105, 105)
+local ESP_COLOR = Color3.fromRGB(105, 105, 105)
+local SHERIFF_COLOR = Color3.fromRGB(25, 25, 112)
+local MURDER_COLOR = Color3.fromRGB(128, 0, 0)
+local INFINITE_YIELD_COLOR = Color3.fromRGB(75, 0, 130)
+
+-- Настройки цветов кнопок (во включенном состоянии)
+local EVENT_FARM_ACTIVE_COLOR = Color3.fromRGB(169, 169, 169)
+local COINS_FARM_ACTIVE_COLOR = Color3.fromRGB(169, 169, 169)
+local ESP_ACTIVE_COLOR = Color3.fromRGB(169, 169, 169)
+local SHERIFF_ACTIVE_COLOR = Color3.fromRGB(0, 0, 180)
+local MURDER_ACTIVE_COLOR = Color3.fromRGB(180, 0, 0)
+local INFINITE_YIELD_ACTIVE_COLOR = Color3.fromRGB(130, 0, 200)
+
+-- Настройки цвета индикаторов
+local INDICATOR_OFF_COLOR = Color3.fromRGB(80,80,80)
+local INDICATOR_ON_COLOR = Color3.fromRGB(186, 255, 241)
+
+-- Настройки цвета текста статуса
+local STATUS_OFF_COLOR = Color3.fromRGB(150, 150, 150)
+local STATUS_ON_COLOR = Color3.fromRGB(200, 200, 200)
+
+-- Настройки цвета текста подсказки
+local HELP_TEXT_COLOR = Color3.fromRGB(24, 35, 82)
+
+-- ========== КОНЕЦ НАСТРОЕК ==========
 
 -- Anti-AFK function
 local function AntiAFK()
@@ -39,13 +87,13 @@ local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Remove old GUI if exists
-if CoreGui:FindFirstChild("HuiHub") then
-	CoreGui:FindFirstChild("HuiHub"):Destroy()
+if CoreGui:FindFirstChild("HuiScriptsMM2") then
+	CoreGui:FindFirstChild("HuiScriptsMM2"):Destroy()
 end
 
 -- Create main GUI
 local MainGui = Instance.new("ScreenGui")
-MainGui.Name = "HuiHub"
+MainGui.Name = "HuiScriptsMM2"
 MainGui.ResetOnSpawn = false
 MainGui.Parent = CoreGui
 
@@ -53,10 +101,10 @@ MainGui.Parent = CoreGui
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-MainFrame.BackgroundTransparency = 0.2
+MainFrame.BackgroundColor3 = GUI_BG_COLOR
+MainFrame.BackgroundTransparency = GUI_BG_TRANSPARENCY
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.Size = UDim2.new(0, 220, 0, 250)
+MainFrame.Size = UDim2.new(0, 220, 0, 240)
 MainFrame.ZIndex = 2
 MainFrame.Parent = MainGui
 
@@ -71,16 +119,16 @@ local MainFrameUiCorner = Instance.new("UICorner")
 MainFrameUiCorner.CornerRadius = UDim.new(0, 8)
 MainFrameUiCorner.Parent = MainFrame
 
--- Title (orange)
+-- Title
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Name = "Title"
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Position = UDim2.new(0.05, 0, 0.05, 0)
-TitleLabel.Size = UDim2.new(0.9, 0, 0.12, 0)
+TitleLabel.Size = UDim2.new(0.9, 0, 0.08, 0)
 TitleLabel.Font = Enum.Font.DenkOne
-TitleLabel.Text = "HuiHub MM2🎃"
+TitleLabel.Text = GUI_TITLE
 TitleLabel.ZIndex = 2
-TitleLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
+TitleLabel.TextColor3 = TEXT_COLOR
 TitleLabel.TextSize = 16
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
 TitleLabel.Parent = MainFrame
@@ -160,7 +208,8 @@ HubText.Parent = InnerSquare
 
 -- Button states
 local ButtonStates = {
-    Autofarm = false,
+    EventFarm = false,
+    CoinsFarm = false,
     ESP = false,
     Sheriff = false,
     Murder = false,
@@ -187,30 +236,32 @@ end
 -- Function to update indicator
 local function UpdateIndicator(button, indicator, statusLabel, state, buttonType)
     if state then
-        indicator.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        indicator.BackgroundColor3 = INDICATOR_ON_COLOR
         
         CreateGlow(indicator)
         
         if buttonType == "toggle" then
             statusLabel.Text = "on"
-            statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+            statusLabel.TextColor3 = STATUS_ON_COLOR
             
-            if button.Name == "AutofarmButton" then
-                button.BackgroundColor3 = Color3.fromRGB(169, 169, 169)
+            if button.Name == "EventFarmButton" then
+                button.BackgroundColor3 = EVENT_FARM_ACTIVE_COLOR
+            elseif button.Name == "CoinsFarmButton" then
+                button.BackgroundColor3 = COINS_FARM_ACTIVE_COLOR
             elseif button.Name == "EspButton" then
-                button.BackgroundColor3 = Color3.fromRGB(169, 169, 169)
+                button.BackgroundColor3 = ESP_ACTIVE_COLOR
             elseif button.Name == "SheriffButton" then
-                button.BackgroundColor3 = Color3.fromRGB(0, 0, 180)
+                button.BackgroundColor3 = SHERIFF_ACTIVE_COLOR
             elseif button.Name == "MurderButton" then
-                button.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+                button.BackgroundColor3 = MURDER_ACTIVE_COLOR
             end
         else
             statusLabel.Text = "executed"
-            statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-            button.BackgroundColor3 = Color3.fromRGB(130, 0, 200)
+            statusLabel.TextColor3 = STATUS_ON_COLOR
+            button.BackgroundColor3 = INFINITE_YIELD_ACTIVE_COLOR
         end
     else
-        indicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        indicator.BackgroundColor3 = INDICATOR_OFF_COLOR
         for _, stroke in pairs(indicator:GetChildren()) do
             if stroke:IsA("UIStroke") then
                 stroke:Destroy()
@@ -219,81 +270,128 @@ local function UpdateIndicator(button, indicator, statusLabel, state, buttonType
         
         if buttonType == "toggle" then
             statusLabel.Text = "off"
-            statusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+            statusLabel.TextColor3 = STATUS_OFF_COLOR
             
-            if button.Name == "AutofarmButton" then
-                button.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
+            if button.Name == "EventFarmButton" then
+                button.BackgroundColor3 = EVENT_FARM_COLOR
+            elseif button.Name == "CoinsFarmButton" then
+                button.BackgroundColor3 = COINS_FARM_COLOR
             elseif button.Name == "EspButton" then
-                button.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
+                button.BackgroundColor3 = ESP_COLOR
             elseif button.Name == "SheriffButton" then
-                button.BackgroundColor3 = Color3.fromRGB(25, 25, 112)
+                button.BackgroundColor3 = SHERIFF_COLOR
             elseif button.Name == "MurderButton" then
-                button.BackgroundColor3 = Color3.fromRGB(128, 0, 0)
+                button.BackgroundColor3 = MURDER_COLOR
             end
         else
             statusLabel.Text = "not executed"
-            statusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-            button.BackgroundColor3 = Color3.fromRGB(75, 0, 130)
+            statusLabel.TextColor3 = STATUS_OFF_COLOR
+            button.BackgroundColor3 = INFINITE_YIELD_COLOR
         end
     end
 end
 
--- Autofarm button
-local AutofarmButton = Instance.new("TextButton")
-AutofarmButton.Name = "AutofarmButton"
-AutofarmButton.BackgroundTransparency = 0
-AutofarmButton.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
-AutofarmButton.Position = UDim2.new(0.05, 0, 0.15, 0)
-AutofarmButton.Size = UDim2.new(0.9, 0, 0.12, 0)
-AutofarmButton.Font = Enum.Font.DenkOne
-AutofarmButton.Text = "  Autofarm"
-AutofarmButton.TextXAlignment = Enum.TextXAlignment.Left
-AutofarmButton.ZIndex = 2
-AutofarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-AutofarmButton.TextSize = 14
-AutofarmButton.Parent = MainFrame
+-- Event Farm button
+local EventFarmButton = Instance.new("TextButton")
+EventFarmButton.Name = "EventFarmButton"
+EventFarmButton.BackgroundTransparency = 0
+EventFarmButton.BackgroundColor3 = EVENT_FARM_COLOR
+EventFarmButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+EventFarmButton.Size = UDim2.new(0.9, 0, 0.08, 0)
+EventFarmButton.Font = Enum.Font.DenkOne
+EventFarmButton.Text = EVENT_FARM_TEXT
+EventFarmButton.TextXAlignment = Enum.TextXAlignment.Left
+EventFarmButton.ZIndex = 3
+EventFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+EventFarmButton.TextSize = 14
+EventFarmButton.Parent = MainFrame
 
-local AutofarmButtonUiCorner = Instance.new("UICorner")
-AutofarmButtonUiCorner.CornerRadius = UDim.new(0, 6)
-AutofarmButtonUiCorner.Parent = AutofarmButton
+local EventFarmButtonUiCorner = Instance.new("UICorner")
+EventFarmButtonUiCorner.CornerRadius = UDim.new(0, 6)
+EventFarmButtonUiCorner.Parent = EventFarmButton
 
--- Indicator for Autofarm
-local AutofarmIndicator = Instance.new("Frame")
-AutofarmIndicator.Name = "AutofarmIndicator"
-AutofarmIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-AutofarmIndicator.Size = UDim2.new(0, 8, 0, 8)
-AutofarmIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
-AutofarmIndicator.ZIndex = 3
-AutofarmIndicator.Parent = AutofarmButton
+-- Indicator for Event Farm
+local EventFarmIndicator = Instance.new("Frame")
+EventFarmIndicator.Name = "EventFarmIndicator"
+EventFarmIndicator.BackgroundColor3 = INDICATOR_OFF_COLOR
+EventFarmIndicator.Size = UDim2.new(0, 8, 0, 8)
+EventFarmIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
+EventFarmIndicator.ZIndex = 4
+EventFarmIndicator.Parent = EventFarmButton
 
-local AutofarmIndicatorCorner = Instance.new("UICorner")
-AutofarmIndicatorCorner.CornerRadius = UDim.new(1, 0)
-AutofarmIndicatorCorner.Parent = AutofarmIndicator
+local EventFarmIndicatorCorner = Instance.new("UICorner")
+EventFarmIndicatorCorner.CornerRadius = UDim.new(1, 0)
+EventFarmIndicatorCorner.Parent = EventFarmIndicator
 
-local AutofarmStatus = Instance.new("TextLabel")
-AutofarmStatus.Name = "AutofarmStatus"
-AutofarmStatus.BackgroundTransparency = 1
-AutofarmStatus.Size = UDim2.new(0, 25, 1, 0)
-AutofarmStatus.Position = UDim2.new(0.86, -30, 0, 0)
-AutofarmStatus.Font = Enum.Font.DenkOne
-AutofarmStatus.Text = "off"
-AutofarmStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
-AutofarmStatus.TextSize = 11
-AutofarmStatus.TextXAlignment = Enum.TextXAlignment.Right
-AutofarmStatus.ZIndex = 3
-AutofarmStatus.Parent = AutofarmButton
+local EventFarmStatus = Instance.new("TextLabel")
+EventFarmStatus.Name = "EventFarmStatus"
+EventFarmStatus.BackgroundTransparency = 1
+EventFarmStatus.Size = UDim2.new(0, 25, 1, 0)
+EventFarmStatus.Position = UDim2.new(0.86, -30, 0, 0)
+EventFarmStatus.Font = Enum.Font.DenkOne
+EventFarmStatus.Text = "off"
+EventFarmStatus.TextColor3 = STATUS_OFF_COLOR
+EventFarmStatus.TextSize = 11
+EventFarmStatus.TextXAlignment = Enum.TextXAlignment.Right
+EventFarmStatus.ZIndex = 4
+EventFarmStatus.Parent = EventFarmButton
 
--- ESP button (SECOND)
+-- Coins Farm button
+local CoinsFarmButton = Instance.new("TextButton")
+CoinsFarmButton.Name = "CoinsFarmButton"
+CoinsFarmButton.BackgroundTransparency = 0
+CoinsFarmButton.BackgroundColor3 = COINS_FARM_COLOR
+CoinsFarmButton.Position = UDim2.new(0.05, 0, 0.24, 0)
+CoinsFarmButton.Size = UDim2.new(0.9, 0, 0.08, 0)
+CoinsFarmButton.Font = Enum.Font.DenkOne
+CoinsFarmButton.Text = COINS_FARM_TEXT
+CoinsFarmButton.TextXAlignment = Enum.TextXAlignment.Left
+CoinsFarmButton.ZIndex = 3
+CoinsFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CoinsFarmButton.TextSize = 14
+CoinsFarmButton.Parent = MainFrame
+
+local CoinsFarmButtonUiCorner = Instance.new("UICorner")
+CoinsFarmButtonUiCorner.CornerRadius = UDim.new(0, 6)
+CoinsFarmButtonUiCorner.Parent = CoinsFarmButton
+
+-- Indicator for Coins Farm
+local CoinsFarmIndicator = Instance.new("Frame")
+CoinsFarmIndicator.Name = "CoinsFarmIndicator"
+CoinsFarmIndicator.BackgroundColor3 = INDICATOR_OFF_COLOR
+CoinsFarmIndicator.Size = UDim2.new(0, 8, 0, 8)
+CoinsFarmIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
+CoinsFarmIndicator.ZIndex = 4
+CoinsFarmIndicator.Parent = CoinsFarmButton
+
+local CoinsFarmIndicatorCorner = Instance.new("UICorner")
+CoinsFarmIndicatorCorner.CornerRadius = UDim.new(1, 0)
+CoinsFarmIndicatorCorner.Parent = CoinsFarmIndicator
+
+local CoinsFarmStatus = Instance.new("TextLabel")
+CoinsFarmStatus.Name = "CoinsFarmStatus"
+CoinsFarmStatus.BackgroundTransparency = 1
+CoinsFarmStatus.Size = UDim2.new(0, 25, 1, 0)
+CoinsFarmStatus.Position = UDim2.new(0.86, -30, 0, 0)
+CoinsFarmStatus.Font = Enum.Font.DenkOne
+CoinsFarmStatus.Text = "off"
+CoinsFarmStatus.TextColor3 = STATUS_OFF_COLOR
+CoinsFarmStatus.TextSize = 11
+CoinsFarmStatus.TextXAlignment = Enum.TextXAlignment.Right
+CoinsFarmStatus.ZIndex = 4
+CoinsFarmStatus.Parent = CoinsFarmButton
+
+-- ESP button
 local EspButton = Instance.new("TextButton")
 EspButton.Name = "EspButton"
 EspButton.BackgroundTransparency = 0
-EspButton.BackgroundColor3 = Color3.fromRGB(105, 105, 105)
-EspButton.Position = UDim2.new(0.05, 0, 0.29, 0)
-EspButton.Size = UDim2.new(0.9, 0, 0.12, 0)
+EspButton.BackgroundColor3 = ESP_COLOR
+EspButton.Position = UDim2.new(0.05, 0, 0.33, 0)
+EspButton.Size = UDim2.new(0.9, 0, 0.08, 0)
 EspButton.Font = Enum.Font.DenkOne
-EspButton.Text = "  ESP"
+EspButton.Text = ESP_TEXT
 EspButton.TextXAlignment = Enum.TextXAlignment.Left
-EspButton.ZIndex = 2
+EspButton.ZIndex = 3
 EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 EspButton.TextSize = 14
 EspButton.Parent = MainFrame
@@ -305,10 +403,10 @@ EspButtonUiCorner.Parent = EspButton
 -- Indicator for ESP
 local EspIndicator = Instance.new("Frame")
 EspIndicator.Name = "EspIndicator"
-EspIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+EspIndicator.BackgroundColor3 = INDICATOR_OFF_COLOR
 EspIndicator.Size = UDim2.new(0, 8, 0, 8)
 EspIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
-EspIndicator.ZIndex = 3
+EspIndicator.ZIndex = 4
 EspIndicator.Parent = EspButton
 
 local EspIndicatorCorner = Instance.new("UICorner")
@@ -322,23 +420,23 @@ EspStatus.Size = UDim2.new(0, 25, 1, 0)
 EspStatus.Position = UDim2.new(0.86, -30, 0, 0)
 EspStatus.Font = Enum.Font.DenkOne
 EspStatus.Text = "off"
-EspStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+EspStatus.TextColor3 = STATUS_OFF_COLOR
 EspStatus.TextSize = 11
 EspStatus.TextXAlignment = Enum.TextXAlignment.Right
-EspStatus.ZIndex = 3
+EspStatus.ZIndex = 4
 EspStatus.Parent = EspButton
 
--- Sheriff Aim button (THIRD)
+-- Sheriff Aim button
 local SheriffButton = Instance.new("TextButton")
 SheriffButton.Name = "SheriffButton"
 SheriffButton.BackgroundTransparency = 0
-SheriffButton.BackgroundColor3 = Color3.fromRGB(25, 25, 112)
-SheriffButton.Position = UDim2.new(0.05, 0, 0.43, 0)
-SheriffButton.Size = UDim2.new(0.9, 0, 0.12, 0)
+SheriffButton.BackgroundColor3 = SHERIFF_COLOR
+SheriffButton.Position = UDim2.new(0.05, 0, 0.42, 0)
+SheriffButton.Size = UDim2.new(0.9, 0, 0.08, 0)
 SheriffButton.Font = Enum.Font.DenkOne
-SheriffButton.Text = "  Sheriff Aim"
+SheriffButton.Text = SHERIFF_TEXT
 SheriffButton.TextXAlignment = Enum.TextXAlignment.Left
-SheriffButton.ZIndex = 2
+SheriffButton.ZIndex = 3
 SheriffButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 SheriffButton.TextSize = 14
 SheriffButton.Parent = MainFrame
@@ -350,10 +448,10 @@ SheriffButtonUiCorner.Parent = SheriffButton
 -- Indicator for Sheriff
 local SheriffIndicator = Instance.new("Frame")
 SheriffIndicator.Name = "SheriffIndicator"
-SheriffIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+SheriffIndicator.BackgroundColor3 = INDICATOR_OFF_COLOR
 SheriffIndicator.Size = UDim2.new(0, 8, 0, 8)
 SheriffIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
-SheriffIndicator.ZIndex = 3
+SheriffIndicator.ZIndex = 4
 SheriffIndicator.Parent = SheriffButton
 
 local SheriffIndicatorCorner = Instance.new("UICorner")
@@ -367,23 +465,23 @@ SheriffStatus.Size = UDim2.new(0, 25, 1, 0)
 SheriffStatus.Position = UDim2.new(0.86, -30, 0, 0)
 SheriffStatus.Font = Enum.Font.DenkOne
 SheriffStatus.Text = "off"
-SheriffStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+SheriffStatus.TextColor3 = STATUS_OFF_COLOR
 SheriffStatus.TextSize = 11
 SheriffStatus.TextXAlignment = Enum.TextXAlignment.Right
-SheriffStatus.ZIndex = 3
+SheriffStatus.ZIndex = 4
 SheriffStatus.Parent = SheriffButton
 
 -- Murder Kill All button
 local MurderButton = Instance.new("TextButton")
 MurderButton.Name = "MurderButton"
 MurderButton.BackgroundTransparency = 0
-MurderButton.BackgroundColor3 = Color3.fromRGB(128, 0, 0)
-MurderButton.Position = UDim2.new(0.05, 0, 0.57, 0)
-MurderButton.Size = UDim2.new(0.9, 0, 0.12, 0)
+MurderButton.BackgroundColor3 = MURDER_COLOR
+MurderButton.Position = UDim2.new(0.05, 0, 0.51, 0)
+MurderButton.Size = UDim2.new(0.9, 0, 0.08, 0)
 MurderButton.Font = Enum.Font.DenkOne
-MurderButton.Text = "  Murder Kill All"
+MurderButton.Text = MURDER_TEXT
 MurderButton.TextXAlignment = Enum.TextXAlignment.Left
-MurderButton.ZIndex = 2
+MurderButton.ZIndex = 3
 MurderButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 MurderButton.TextSize = 14
 MurderButton.Parent = MainFrame
@@ -395,10 +493,10 @@ MurderButtonUiCorner.Parent = MurderButton
 -- Indicator for Murder
 local MurderIndicator = Instance.new("Frame")
 MurderIndicator.Name = "MurderIndicator"
-MurderIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+MurderIndicator.BackgroundColor3 = INDICATOR_OFF_COLOR
 MurderIndicator.Size = UDim2.new(0, 8, 0, 8)
 MurderIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
-MurderIndicator.ZIndex = 3
+MurderIndicator.ZIndex = 4
 MurderIndicator.Parent = MurderButton
 
 local MurderIndicatorCorner = Instance.new("UICorner")
@@ -412,23 +510,23 @@ MurderStatus.Size = UDim2.new(0, 25, 1, 0)
 MurderStatus.Position = UDim2.new(0.86, -30, 0, 0)
 MurderStatus.Font = Enum.Font.DenkOne
 MurderStatus.Text = "off"
-MurderStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+MurderStatus.TextColor3 = STATUS_OFF_COLOR
 MurderStatus.TextSize = 11
 MurderStatus.TextXAlignment = Enum.TextXAlignment.Right
-MurderStatus.ZIndex = 3
+MurderStatus.ZIndex = 4
 MurderStatus.Parent = MurderButton
 
 -- Infinite Yield button
 local InfiniteYieldButton = Instance.new("TextButton")
 InfiniteYieldButton.Name = "InfiniteYieldButton"
 InfiniteYieldButton.BackgroundTransparency = 0
-InfiniteYieldButton.BackgroundColor3 = Color3.fromRGB(75, 0, 130)
-InfiniteYieldButton.Position = UDim2.new(0.05, 0, 0.71, 0)
-InfiniteYieldButton.Size = UDim2.new(0.9, 0, 0.12, 0)
+InfiniteYieldButton.BackgroundColor3 = INFINITE_YIELD_COLOR
+InfiniteYieldButton.Position = UDim2.new(0.05, 0, 0.60, 0)
+InfiniteYieldButton.Size = UDim2.new(0.9, 0, 0.08, 0)
 InfiniteYieldButton.Font = Enum.Font.DenkOne
-InfiniteYieldButton.Text = "  Infinite Yield"
+InfiniteYieldButton.Text = INFINITE_YIELD_TEXT
 InfiniteYieldButton.TextXAlignment = Enum.TextXAlignment.Left
-InfiniteYieldButton.ZIndex = 2
+InfiniteYieldButton.ZIndex = 3
 InfiniteYieldButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 InfiniteYieldButton.TextSize = 14
 InfiniteYieldButton.Parent = MainFrame
@@ -440,10 +538,10 @@ InfiniteYieldButtonUiCorner.Parent = InfiniteYieldButton
 -- Indicator for Infinite Yield
 local InfiniteYieldIndicator = Instance.new("Frame")
 InfiniteYieldIndicator.Name = "InfiniteYieldIndicator"
-InfiniteYieldIndicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+InfiniteYieldIndicator.BackgroundColor3 = INDICATOR_OFF_COLOR
 InfiniteYieldIndicator.Size = UDim2.new(0, 8, 0, 8)
 InfiniteYieldIndicator.Position = UDim2.new(0.93, -12, 0.5, -4)
-InfiniteYieldIndicator.ZIndex = 3
+InfiniteYieldIndicator.ZIndex = 4
 InfiniteYieldIndicator.Parent = InfiniteYieldButton
 
 local InfiniteYieldIndicatorCorner = Instance.new("UICorner")
@@ -457,19 +555,34 @@ InfiniteYieldStatus.Size = UDim2.new(0, 25, 1, 0)
 InfiniteYieldStatus.Position = UDim2.new(0.86, -30, 0, 0)
 InfiniteYieldStatus.Font = Enum.Font.DenkOne
 InfiniteYieldStatus.Text = "not executed"
-InfiniteYieldStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+InfiniteYieldStatus.TextColor3 = STATUS_OFF_COLOR
 InfiniteYieldStatus.TextSize = 11
 InfiniteYieldStatus.TextXAlignment = Enum.TextXAlignment.Right
-InfiniteYieldStatus.ZIndex = 3
+InfiniteYieldStatus.ZIndex = 4
 InfiniteYieldStatus.Parent = InfiniteYieldButton
+
+-- Help text below Infinite Yield button
+local HelpText = Instance.new("TextLabel")
+HelpText.Name = "HelpText"
+HelpText.BackgroundTransparency = 1
+HelpText.Position = UDim2.new(0.05, 0, 0.70, 0)
+HelpText.Size = UDim2.new(0.9, 0, 0.08, 0)
+HelpText.Font = Enum.Font.DenkOne
+HelpText.Text = HELP_TEXT
+HelpText.TextColor3 = HELP_TEXT_COLOR
+HelpText.TextSize = 11
+HelpText.TextXAlignment = Enum.TextXAlignment.Center
+HelpText.TextYAlignment = Enum.TextYAlignment.Top
+HelpText.ZIndex = 2
+HelpText.Parent = MainFrame
 
 -- Window for SHOOT button
 local ShootFrame = Instance.new("Frame")
 ShootFrame.Name = "ShootFrame"
 ShootFrame.Size = UDim2.new(0, 70, 0, 70)
 ShootFrame.Position = UDim2.new(0.8, -35, 0.5, -35)
-ShootFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-ShootFrame.BackgroundTransparency = 0.2
+ShootFrame.BackgroundColor3 = GUI_BG_COLOR
+ShootFrame.BackgroundTransparency = GUI_BG_TRANSPARENCY
 ShootFrame.BorderSizePixel = 0
 ShootFrame.Visible = false
 ShootFrame.ZIndex = 2
@@ -504,11 +617,16 @@ ShootButtonCorner.Parent = ShootButton
 
 -- ========== FUNCTIONALITY ==========
 
--- Variables for autofarm
-local AutofarmStarted = false
-local AutofarmIN = false
-local autofarmstopevent = Instance.new("BindableEvent")
-local CurrentCoinType = "Candy"
+-- Variables for event farm
+local EventFarmStarted = false
+local EventFarmIN = false
+local eventfarmstopevent = Instance.new("BindableEvent")
+
+-- Variables for coins farm
+local CoinsFarmStarted = false
+local CoinsFarmIN = false
+local coinsfarmstopevent = Instance.new("BindableEvent")
+
 local CoinCollectedEvent = game.ReplicatedStorage.Remotes.Gameplay.CoinCollected
 local RoundStartEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundStart
 local RoundEndEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundEndFade
@@ -557,11 +675,11 @@ local function PcallTP(Position)
 end
 
 -- Function to find nearest coin
-local function FindNearestCoin(container)
+local function FindNearestCoin(container, coinType)
 	local coin = nil
 	local magn = math.huge
 	for _, v in pairs(container:GetChildren()) do
-		if v:GetAttribute("CoinID") == CurrentCoinType and v:FindFirstChild("TouchInterest") then
+		if v:GetAttribute("CoinID") == coinType and v:FindFirstChild("TouchInterest") then
 			if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
 				local distance = (Player.Character.HumanoidRootPart.Position - v.Position).Magnitude
 				if distance < magn then
@@ -874,15 +992,49 @@ function IsAlive(Player)
     return true
 end
 
--- Function to enable/disable autofarm
-local function StartAutofarmButtonC()
-	if not AutofarmStarted then
-		AutofarmStarted = true
-		AutofarmIN = true
+-- Function to enable/disable event farm
+local function StartEventFarmButtonC()
+	if not EventFarmStarted then
+		EventFarmStarted = true
+		EventFarmIN = true
+        if CoinsFarmStarted then
+            CoinsFarmStarted = false
+            CoinsFarmIN = false
+            coinsfarmstopevent:Fire()
+            UpdateIndicator(CoinsFarmButton, CoinsFarmIndicator, CoinsFarmStatus, false, "toggle")
+            ButtonStates.CoinsFarm = false
+        end
+        UpdateIndicator(EventFarmButton, EventFarmIndicator, EventFarmStatus, true, "toggle")
+        ButtonStates.EventFarm = true
 	else
-		AutofarmStarted = false
-		AutofarmIN = false
-		autofarmstopevent:Fire()
+		EventFarmStarted = false
+		EventFarmIN = false
+		eventfarmstopevent:Fire()
+        UpdateIndicator(EventFarmButton, EventFarmIndicator, EventFarmStatus, false, "toggle")
+        ButtonStates.EventFarm = false
+	end
+end
+
+-- Function to enable/disable coins farm
+local function StartCoinsFarmButtonC()
+	if not CoinsFarmStarted then
+		CoinsFarmStarted = true
+		CoinsFarmIN = true
+        if EventFarmStarted then
+            EventFarmStarted = false
+            EventFarmIN = false
+            eventfarmstopevent:Fire()
+            UpdateIndicator(EventFarmButton, EventFarmIndicator, EventFarmStatus, false, "toggle")
+            ButtonStates.EventFarm = false
+        end
+        UpdateIndicator(CoinsFarmButton, CoinsFarmIndicator, CoinsFarmStatus, true, "toggle")
+        ButtonStates.CoinsFarm = true
+	else
+		CoinsFarmStarted = false
+		CoinsFarmIN = false
+		coinsfarmstopevent:Fire()
+        UpdateIndicator(CoinsFarmButton, CoinsFarmIndicator, CoinsFarmStatus, false, "toggle")
+        ButtonStates.CoinsFarm = false
 	end
 end
 
@@ -942,7 +1094,7 @@ local function AnimateInfiniteYieldButton()
     local tweenIn = TweenService:Create(
         InfiniteYieldButton,
         TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {Size = UDim2.new(0.85, 0, 0.11, 0)}
+        {Size = UDim2.new(0.85, 0, 0.07, 0)}
     )
     tweenIn:Play()
     
@@ -995,31 +1147,53 @@ ShootButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Coin collection handler with RESET WITHOUT TELEPORTATION
+-- Coin collection handler for Event Farm
 CoinCollectedEvent.OnClientEvent:Connect(function(cointype, current, max)
-	if cointype == CurrentCoinType then
-		AutofarmIN = true
-	end
-	if cointype == CurrentCoinType and tonumber(current) == tonumber(max) then
-		AutofarmIN = false
-		killCharacter()
-	end
+    if EventFarmStarted and EventFarmIN then
+        if cointype == EVENT_COIN_TYPE then
+            EventFarmIN = true
+        end
+        if cointype == EVENT_COIN_TYPE and tonumber(current) == tonumber(max) then
+            EventFarmIN = false
+            killCharacter()
+        end
+    end
+    
+    if CoinsFarmStarted and CoinsFarmIN then
+        if cointype == COINS_FARM_TYPE then
+            CoinsFarmIN = true
+        end
+        if cointype == COINS_FARM_TYPE and tonumber(current) == tonumber(max) then
+            CoinsFarmIN = false
+            killCharacter()
+        end
+    end
 end)
 
 -- Round start and end handlers
 RoundStartEvent.OnClientEvent:Connect(function()
-	AutofarmIN = true
+    if EventFarmStarted then
+        EventFarmIN = true
+    end
+    if CoinsFarmStarted then
+        CoinsFarmIN = true
+    end
 end)
 
 RoundEndEvent.OnClientEvent:Connect(function()
-	AutofarmIN = false
+    if EventFarmStarted then
+        EventFarmIN = false
+    end
+    if CoinsFarmStarted then
+        CoinsFarmIN = false
+    end
 end)
 
--- Main autofarm loop WITH SPEED SETTING
+-- Main event farm loop WITH SPEED SETTING
 spawn(function()
 	while true do
-		if AutofarmStarted and AutofarmIN and Player.Character and returncoincontaier() and Player:GetAttribute("Alive") then
-			local coinData = FindNearestCoin(returncoincontaier())
+		if EventFarmStarted and EventFarmIN and Player.Character and returncoincontaier() and Player:GetAttribute("Alive") then
+			local coinData = FindNearestCoin(returncoincontaier(), EVENT_COIN_TYPE)
 			if coinData[1] ~= nil then
 				local distance = coinData[2]
 				
@@ -1037,7 +1211,53 @@ spawn(function()
 				tween:Play()
 				
 				local connection
-				connection = autofarmstopevent.Event:Connect(function()
+				connection = eventfarmstopevent.Event:Connect(function()
+					tween:Cancel()
+					connection:Disconnect()
+				end)
+				
+				while coinData[1] and coinData[1]:FindFirstChild("TouchInterest") do
+					wait()
+				end
+				
+				tween:Cancel()
+				if connection then
+					connection:Disconnect()
+				end
+				wait(0.1)
+			else
+				wait(0.3)
+			end
+		else
+			wait(0.3)
+		end
+		wait(0.01)
+	end
+end)
+
+-- Main coins farm loop WITH SPEED SETTING
+spawn(function()
+	while true do
+		if CoinsFarmStarted and CoinsFarmIN and Player.Character and returncoincontaier() and Player:GetAttribute("Alive") then
+			local coinData = FindNearestCoin(returncoincontaier(), COINS_FARM_TYPE)
+			if coinData[1] ~= nil then
+				local distance = coinData[2]
+				
+				if distance > 175 then 
+					PcallTP(coinData[1].CFrame)
+					wait(0.5)
+					continue 
+				end
+				
+				local tween = TweenService:Create(
+					Player.Character.HumanoidRootPart, 
+					TweenInfo.new(distance / FLY_SPEED, Enum.EasingStyle.Linear), 
+					{CFrame = CFrame.new(coinData[1].Position)}
+				)
+				tween:Play()
+				
+				local connection
+				connection = coinsfarmstopevent.Event:Connect(function()
 					tween:Cancel()
 					connection:Disconnect()
 				end)
@@ -1165,10 +1385,12 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 -- Connect buttons
-AutofarmButton.MouseButton1Click:Connect(function()
-    ButtonStates.Autofarm = not ButtonStates.Autofarm
-    UpdateIndicator(AutofarmButton, AutofarmIndicator, AutofarmStatus, ButtonStates.Autofarm, "toggle")
-    StartAutofarmButtonC()
+EventFarmButton.MouseButton1Click:Connect(function()
+    StartEventFarmButtonC()
+end)
+
+CoinsFarmButton.MouseButton1Click:Connect(function()
+    StartCoinsFarmButtonC()
 end)
 
 EspButton.MouseButton1Click:Connect(function()
